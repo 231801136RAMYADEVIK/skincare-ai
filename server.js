@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 
 const API_KEY = process.env.GROQ_API_KEY;
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 console.log("🔑 API KEY:", API_KEY ? "Loaded ✅" : "Missing ❌");
 
