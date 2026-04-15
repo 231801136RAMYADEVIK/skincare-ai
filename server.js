@@ -8,6 +8,7 @@ dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(express.static("."));
 
 const API_KEY = process.env.GROQ_API_KEY;
 const PORT = process.env.PORT || 8080;  // ✅ Railway default is 8080, not 5000
@@ -15,7 +16,7 @@ const PORT = process.env.PORT || 8080;  // ✅ Railway default is 8080, not 5000
 console.log("🔑 API KEY:", API_KEY ? "Loaded ✅" : "Missing ❌");
 
 app.get("/", (req, res) => {
-  res.send("Backend working");
+  res.sendFile("index.html", { root: "." });
 });
 
 app.post("/chat", async (req, res) => {
