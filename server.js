@@ -10,60 +10,56 @@ app.use(cors());
 app.use(express.json());
 
 const API_KEY = process.env.GROQ_API_KEY;
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8080;  // ✅ Railway default is 8080, not 5000
 
 console.log("🔑 API KEY:", API_KEY ? "Loaded ✅" : "Missing ❌");
 
-app.get("/", (req,res)=>{
+app.get("/", (req, res) => {
   res.send("Backend working");
 });
 
-app.post("/chat", async (req,res)=>{
-
-  try{
+app.post("/chat", async (req, res) => {
+  try {
     const response = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
       {
-        method:"POST",
-        headers:{
-          Authorization:`Bearer ${API_KEY}`,
-          "Content-Type":"application/json"
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+          "Content-Type": "application/json",
         },
-        body:JSON.stringify({
-          model: "llama-3.1-8b-instant",  // ✅ FINAL MODEL
-          messages:[
+        body: JSON.stringify({
+          model: "llama-3.1-8b-instant",
+          messages: [
             {
-              role:"system",
-              content:"You are a skincare expert. Give safe and simple advice."
+              role: "system",
+              content: "You are a skincare expert. Give safe and simple advice.",
             },
             {
-              role:"user",
-              content:req.body.message
-            }
-          ]
-        })
+              role: "user",
+              content: req.body.message,
+            },
+          ],
+        }),
       }
     );
 
     const data = await response.json();
 
-    if(!data.choices){
+    if (!data.choices) {
       return res.json({
-        reply:data?.error?.message || "⚠️ API error"
+        reply: data?.error?.message || "⚠️ API error",
       });
     }
 
-    res.json({
-      reply:data.choices[0].message.content
-    });
+    res.json({ reply: data.choices[0].message.content });
 
-  }catch(err){
-    console.log(err);
-    res.json({reply:"⚠️ Server error"});
+  } catch (err) {
+    console.error(err);
+    res.json({ reply: "⚠️ Server error" });
   }
-
 });
 
-app.listen(PORT,()=>{
-  console.log("🚀 Server running on http://127.0.0.1:"+PORT);
+app.listen(PORT, "0.0.0.0", () => {  // ✅ Explicit 0.0.0.0 for Railway
+  console.log("🚀 Server running on port " + PORT);
 });
