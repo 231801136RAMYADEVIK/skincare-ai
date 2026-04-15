@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>SkinCare AI</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    background:linear-gradient(135deg,#0f172a,#1e293b);
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+
+.container{
+    width:400px;
+    max-width:90%;
+    background:#1e293b;
+    padding:20px;
+    border-radius:15px;
+    text-align:center;
+}
+
+input{
+    width:90%;
+    padding:10px;
+    margin:8px 0;
+    border:none;
+    border-radius:8px;
+}
+
+button{
+    padding:10px;
+    margin:5px;
+    border:none;
+    border-radius:8px;
+    background:#22c55e;
+    color:white;
+    cursor:pointer;
+}
+
+.nav{ margin:10px 0; }
+
+#chatbox{
+    height:260px;
+    overflow-y:auto;
+    background:#0f172a;
+    padding:10px;
+    border-radius:10px;
+    margin-bottom:10px;
+}
+
+.user{ text-align:right; color:#22c55e; }
+.bot{ text-align:left; color:#60a5fa; }
+.typing{ color:#aaa; font-style:italic; }
+
+.input-area{ display:flex; }
+.input-area input{ flex:1; }
+
+.clear-btn{ background:#ef4444; }
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+<div id="loginPage">
+    <h2>🌿 SkinCare AI</h2>
+    <input id="username" placeholder="Username">
+    <input id="password" type="password" placeholder="Password">
+    <button onclick="signup()">Signup</button>
+    <button onclick="login()">Login</button>
+</div>
+
+<div id="appPage" style="display:none;">
+    <h2>🌿 SkinCare AI</h2>
+
+    <div class="nav">
+        <button onclick="showHome()">🏠 Home</button>
+        <button onclick="showChat()">💬 Chatbot</button>
+        <button onclick="clearChat()" class="clear-btn">🗑 Clear</button>
+        <button onclick="logout()">🚪 Logout</button>
+    </div>
+
+    <div id="homeSection">
+        <h3>Welcome 👋</h3>
+        <p>Ask skincare questions in chatbot</p>
+    </div>
+
+    <div id="chatSection" style="display:none;">
+        <div id="chatbox"></div>
+
+        <div class="input-area">
+            <input id="message" placeholder="Ask about skin..." onkeypress="handleEnter(event)">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<script>
+
+const BASE_URL = "http://127.0.0.1:5000";
+
+// LOGIN SYSTEM
+function signup(){
+    localStorage.setItem("user", username.value);
+    localStorage.setItem("pass", password.value);
+    alert("Signup successful!");
+}
+
+function login(){
+    if(username.value === localStorage.getItem("user") &&
+       password.value === localStorage.getItem("pass")){
+        loginPage.style.display="none";
+        appPage.style.display="block";
+    } else alert("Invalid login");
+}
+
+function logout(){
+    appPage.style.display="none";
+    loginPage.style.display="block";
+}
+
+// NAV
+function showHome(){
+    homeSection.style.display="block";
+    chatSection.style.display="none";
+}
+
+function showChat(){
+    homeSection.style.display="none";
+    chatSection.style.display="block";
+
+    if(chatbox.innerHTML===""){
+        addMessage("Hello 👋 I am your SkinCare Assistant!", "bot");
+    }
+}
+
+// CHAT
+function handleEnter(e){
+    if(e.key==="Enter") sendMessage();
+}
+
+async function sendMessage(){
+    let text = message.value.trim();
+    if(!text) return;
+
+    addMessage(text,"user");
+    message.value="";
+
+    let typing=document.createElement("div");
+    typing.className="typing";
+    typing.innerText="Typing...";
+    chatbox.appendChild(typing);
+
+    try{
+        let res = await fetch(`${BASE_URL}/chat`, {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({message:text})
+        });
+
+        let data = await res.json();
+        typing.remove();
+
+        addMessage(data.reply,"bot");
+
+    }catch{
+        typing.remove();
+        addMessage("⚠️ Backend not running","bot");
+    }
+}
+
+function addMessage(text,type){
+    let div=document.createElement("div");
+    div.className=type;
+    div.innerText=text;
+    chatbox.appendChild(div);
+    chatbox.scrollTop=chatbox.scrollHeight;
+}
+
+function clearChat(){
+    chatbox.innerHTML="";
+}
+
+</script>
+
+</body>
+</html>
